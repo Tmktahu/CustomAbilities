@@ -73,7 +73,7 @@ Data persists through server restarts and is saved automatically every 30 second
 
 ## Installation
 
-1. Install [BepInEx](https://docs.bepinex.dev/) and [VampireCommandFramework](https://github.com/decaprisan/VampireCommandFramework) on your V Rising dedicated server.
+1. Install [BepInEx](https://thunderstore.io/c/v-rising/p/BepInEx/BepInExPack_V_Rising/) and [VampireCommandFramework](https://github.com/decaprime/VampireCommandFramework) on your V Rising dedicated server.
 2. Place `CustomAbilities.dll` in your `BepInEx/plugins/` directory.
 3. Start the server, the mod will generate its config file automatically.
 4. Configure settings in `BepInEx/config/io.vrising.CustomAbilities.cfg`.
