@@ -1,6 +1,6 @@
 ![](banner.png)
 
-[![AGPL-3.0 License](https://img.shields.io/static/v1?label=Licence&message=AGPL-3.0&color=green)](https://opensource.org/licenses/AGPL-3.0) [![GitHub Release](https://img.shields.io/static/v1?label=Version&message=1.0.0&color=blue)]() [![Patreon](https://img.shields.io/badge/Patreon-FFFFFF)](https://patreon.com/FrykesFiddlings)
+[![AGPL-3.0 License](https://img.shields.io/static/v1?label=Licence&message=AGPL-3.0&color=green)](https://opensource.org/licenses/AGPL-3.0) [![GitHub Release](https://img.shields.io/static/v1?label=Version&message=1.0.1&color=blue)]() [![Patreon](https://img.shields.io/badge/Patreon-FFFFFF)](https://patreon.com/FrykesFiddlings)
 
 This is the repository for CustomAbilities, coded by Fryke (fryke) on Discord.
 
@@ -14,7 +14,7 @@ CustomAbilities is a V Rising dedicated server mod that allows server admins to 
 - **Spell Pool System** - External mods register spell providers to define which spells a player has access to. Player spell assignment is gated by the pool; admin assignment bypasses it.
 - **Form Ability Overrides** - API for other mods to supply custom ability arrays for shapeshift forms.
 - **Special Case Handlers** - API for other mods to modify ability slots at runtime based on tags, buffs, or state.
-- **Jewelable Ability Protection** - Configurable blocking of spell school abilities on items to prevent jewel conflicts.
+- **Jewelable Ability Blocking** - Prevents jewelable abilities (spell school abilities) from being assigned to items, protecting against a known engine bug that can delete jewels and corrupt inventory data.
 - **Ability Merge Priority** - Item abilities > category abilities > default, with a clear merge chain.
 - **Persistent Data** - All player and item ability data saved to local JSON files and survives server restarts.
 
@@ -139,15 +139,23 @@ bool hasSpell = CustomAbilities.AbilityAPI.HasAvailableSpell(playerEntity, spell
 
 ## Compatibility with Bloodcraft
 
-[Bloodcraft](https://thunderstore.io/c/v-rising/p/ittai/Bloodcraft/) is another V Rising server mod that provides limited ability slot customization. Both mods patch the same `ReplaceAbilityOnSlotSystem` to apply ability changes.
+[Bloodcraft](https://github.com/mfoltz/Bloodcraft) is another V Rising server mod that provides ability slot customization. Both mods patch the same `ReplaceAbilityOnSlotSystem` to apply ability changes.
 
 **How they interact:**
 - Both mods run as Harmony prefixes on the same system, so both execute on every weapon equip buff update.
 - CustomAbilities applies abilities with a **priority of 1** (or 9 for form overrides), while Bloodcraft applies with priority 0. Higher priority values take effect, so CustomAbilities assignments override Bloodcraft's when they target the same slot.
-- Bloodcraft only supports assigning abilities to the unarmed/fishing pole Q and E slots, plus a class spell (dash slot). CustomAbilities supports all 8 ability slots across all weapon categories and individual items.
+- Bloodcraft supports assigning abilities to the unarmed/fishing pole Q and E slots, plus a class spell (dash slot). CustomAbilities supports all 8 ability slots across all weapon categories and individual items.
 - The mods do not break each other. If both are installed, Bloodcraft's unarmed slot assignments will still apply to any slots that CustomAbilities hasn't configured.
 
-**Recommendation:** If you use both mods, assign abilities through CustomAbilities for full control. Bloodcraft's limited unarmed slot assignments will be automatically superseded where CustomAbilities has a slot configured.
+**Recommendation:** If you use both mods, assign abilities through CustomAbilities for full control. Bloodcraft's unarmed slot assignments will be automatically superseded where CustomAbilities has a slot configured.
+
+## Known Engine Issues and Safeguards
+
+CustomAbilities has safeguards around jewelable abilities (abilities that can have jewels socketed into them) and abilities with recast mechanics. These protections exist because of a known engine-level bug in V Rising:
+
+When a jewelable ability is assigned directly to an item, weapon swapping can cause the jewel on that ability to be deleted and can create a duplicate inventory slot entry for the weapon. This can potentially lead to data corruption. As a precaution, the `BlockJewelableAbilitiesOnItems` config option (enabled by default) prevents jewelable abilities from being assigned to items entirely.
+
+Additionally, if a player assigns a recastable ability to their unarmed Q or E slot and weapon swaps in the middle of a recast, the jewel on that ability can disappear. This is why the mod warns players when they assign a recastable ability to those slots. These are engine-level issues that the mod cannot fix, so the safeguards are in place to protect player data.
 
 ## Attribution
 
@@ -157,7 +165,7 @@ Portions of code and design patterns in this project were inspired by or adapted
 
   - KindredCommands <https://github.com/odjit/KindredCommands>
     Licensed under AGPL-3.0
-  - Bloodcraft <https://github.com/ittai/Bloodcraft>
+  - Bloodcraft <https://github.com/mfoltz/Bloodcraft>
     Licensed under CC BY-NC 4.0
 
 This is an independent project with its own purpose and functionality. It is not a fork, modification, or derivative of any of the above projects. Some utility code and patterns were referenced during development.
